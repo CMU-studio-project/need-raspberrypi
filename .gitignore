@@ -1,0 +1,88 @@
+
+
+# Python specific .gitignore
+# GitHub recommended entries from https://github.com/github/gitignore
+
+# Byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+
+# C extensions
+*.so
+
+# Distribution / packaging
+.Python
+Python-3.7.14/
+env/
+bin/
+build/
+develop-eggs/
+dist/
+eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+DeepSpeech-examples/
+DeepSpeechInstall/
+
+# Wegiht
+*.deb
+*.tflite
+*.scorer
+*.pb
+*.h5
+*.onnx
+
+# Audio
+*.wav
+*.mp3
+*.raw
+
+# Cache
+__pycache__/
+.cache/
+.conda/
+.config/
+.docker/
+.idlerc/
+.local/
+.venv/
+.vscode-server/
+.python_history
+.bash_history
+.ssh/
+
+# dataset
+Libri-test/
+tts_data/
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.coverage
+.cache
+nosetests.xml
+coverage.xml
+
+# Translations
+*.mo
+
+# Rope
+.ropeproject
+
+# Sphinx documentation
+docs/_build/
+
+# zip
+*.tar.gz
+*.tgz
+*.zip
