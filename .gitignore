@@ -27,6 +27,21 @@ var/
 *.egg-info/
 .installed.cfg
 *.egg
+DeepSpeech-examples/
+DeepSpeechInstall/
+
+# Wegiht
+*.deb
+*.tflite
+*.scorer
+*.pb
+*.h5
+*.onnx
+
+# Audio
+*.wav
+*.mp3
+*.raw
 
 # Cache
 __pycache__/
@@ -38,10 +53,13 @@ __pycache__/
 .local/
 .venv/
 .vscode-server/
+.python_history
+.bash_history
+.ssh/
 
 # dataset
 Libri-test/
-
+tts_data/
 
 # Installer logs
 pip-log.txt
@@ -63,3 +81,8 @@ coverage.xml
 
 # Sphinx documentation
 docs/_build/
+
+# zip
+*.tar.gz
+*.tgz
+*.zip
