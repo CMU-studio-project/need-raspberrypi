@@ -86,21 +86,25 @@ while True:
         channels = 1
         # 44100 samples per second
         sample_rate = 44100
-        record_seconds = 50
 
         frames = []
         silence = []
+
+        record_seconds = 50
+        auto_stop_condition = 5
+
         breaker = True
         i = 0
         print("Recording...")
         while breaker and i in range(int(sample_rate / chunk * record_seconds)):
             data = audio_stream.read(chunk , exception_on_overflow = False)
-            print(rms(data))
+            #print(rms(data))
             if rms(data) < 0.1:
-            #    print("low")
                 silence.append(1)
+            else:
+                silence=[]
             #print(silence)
-            if len(silence)==5:
+            if len(silence)==auto_stop_condition:
                 breaker = False
             # if you want to hear your voice while recording
             # stream.write(data)
