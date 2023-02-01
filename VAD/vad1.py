@@ -3,6 +3,7 @@ import pyaudio
 import struct
 import numpy as np
 import wave
+import math
 #import sounddevice as sd
 #import wavio as wv
 #from scipy.io.wavfile import write
@@ -25,6 +26,16 @@ Input: the desired frame duration in milliseconds, the PCM data, and
 the sample rate.
 Yields/Generates: Frames of the requested duration.
 """
+def rms( data ):
+    count = len(data)/2
+    format = "%dh"%(count)
+    shorts = struct.unpack( format, data )
+    sum_squares = 0.0
+    for sample in shorts:
+        n = sample * (1.0/32768)
+        sum_squares += n*n
+    return math.sqrt( sum_squares / count )
+
 def resample(data, input_rate=44100):
     """
     Microphone may not support our native processing sampling rate, so
@@ -54,14 +65,8 @@ audio_stream=pa.open(
     input=True,
     frames_per_buffer= new_frame_number)
 
-# Sampling frequency
-freq = 44100
-  
-# Recording duration
-duration = 5
-
 while True:
-    pcm = audio_stream.read(new_frame_number)
+    pcm = audio_stream.read(new_frame_number, exception_on_overflow = False)
     pcm = struct.unpack_from("h" * new_frame_number, pcm)
     #print(pcm)
     #print(len(pcm))
@@ -81,32 +86,29 @@ while True:
         channels = 1
         # 44100 samples per second
         sample_rate = 44100
-        record_seconds = 5
-        # initialize PyAudio object
-        #p = pyaudio.PyAudio()
-        # open stream object as input & output
-        #stream = pa.open(format=FORMAT,
-        #                channels=channels,
-        #                rate=sample_rate,
-        #                input=True,
-        #                output=True,
-        #                frames_per_buffer=chunk)
+        record_seconds = 50
+
         frames = []
+        silence = []
+        breaker = True
+        i = 0
         print("Recording...")
-        for i in range(int(sample_rate / chunk * record_seconds)):
-            data = audio_stream.read(chunk)
+        while breaker and i in range(int(sample_rate / chunk * record_seconds)):
+            data = audio_stream.read(chunk , exception_on_overflow = False)
+            print(rms(data))
+            if rms(data) < 0.1:
+            #    print("low")
+                silence.append(1)
+            #print(silence)
+            if len(silence)==5:
+                breaker = False
             # if you want to hear your voice while recording
             # stream.write(data)
             frames.append(data)
+            i+=1
         # frames = pcm
         print("Finished recording.")
-        # stop and close stream
-        # stream.stop_stream()
-        # stream.close()
-        # terminate pyaudio object
-        # pa.terminate()
-        # save audio file
-        # open the file in 'write bytes' mode
+
         wf = wave.open(filename, "wb")
         # set the channels
         wf.setnchannels(channels)
