@@ -1,9 +1,14 @@
 import asyncio
 from kasa import SmartBulb
+import os
+from dotenv import load_dotenv
+
+load_dotenv()
+BULB_IP = os.getenv("BULB_IP")
 
 async def main():
     
-    bulb = SmartBulb("127.0.0.1")
+    bulb = SmartBulb(BULB_IP)  # Create an instance of the bulb
     await bulb.update()  # Request the update
     print(bulb.alias)  # Print out the alias
     print(bulb.emeter_realtime)  # Print out current emeter status
