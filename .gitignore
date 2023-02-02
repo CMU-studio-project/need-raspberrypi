@@ -34,7 +34,7 @@ credentials/
 
 # ENV files
 .env
-venv/
+.venv/
 
 # Wegiht
 *.deb
