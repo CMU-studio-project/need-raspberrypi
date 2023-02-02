@@ -2,9 +2,12 @@ from typing import Union, Optional
 from pathlib import Path
 import time
 import json
+# from flask import Flask
 
 from needpubsub.publish import publish_message
 from needpubsub.subscribe import subscribe_message_sync
+
+# app = Flask(__name__)
 
 class NeedApp:
     """
@@ -22,7 +25,8 @@ class NeedApp:
     def run(self, debug_audio: Optional[str] = None) -> None:
         if debug_audio is not None:
             self.send_audio(debug_audio)
-    
+            self.wait_command()
+
     def send_audio(self, audio: Union[bytes, Path, str]):
         if isinstance(audio, (Path, str)):
             with open(audio, "rb") as f:
@@ -46,11 +50,11 @@ class NeedApp:
         command = json.loads(message.decode("utf-8"))
         print(command)
         print(kwargs)
-
     
 if __name__ == "__main__":
     import argparse
-    
+    app.config['SESSION_TYPE'] = 'filesystem'
+
     parser = argparse.ArgumentParser()
     parser.add_argument("--device_id", type=str, help="Device ID")
     parser.add_argument("--project_id", type=str, help="project ID")
@@ -60,3 +64,9 @@ if __name__ == "__main__":
     
     app = NeedApp(args.project_id, args.device_id, args.topic_id)
     app.run(args.debug_audio)
+    # @app.route('/')
+    # def hello():
+    #     return 'Coddlers'
+
+    # app.run(host='0.0.0.0', debug=True)
+    
