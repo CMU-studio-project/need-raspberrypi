@@ -43,6 +43,7 @@ DeepSpeechInstall/
 *.wav
 *.mp3
 *.raw
+*.m4a
 
 # Cache
 __pycache__/
