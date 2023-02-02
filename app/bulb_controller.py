@@ -9,11 +9,10 @@ class LightBulb:
     def __init__(self):
         load_dotenv()
         self.BULB_IP = os.getenv("BULB_IP")
+        self.bulb = SmartBulb(self.BULB_IP)
+
     async def update(self):
         await self.bulb.update()
-    
-    def __init__(self):
-        self.bulb = SmartBulb(self.BULB_IP)
         
     async def turn_on(self):
         await self.bulb.turn_on()
