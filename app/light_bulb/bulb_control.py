@@ -19,7 +19,9 @@ async def main():
     print(bulb.is_on)
 
     await bulb.set_brightness(20)
+    await bulb.update()
     await bulb.set_brightness(50)
+    await bulb.update()
     await bulb.set_brightness(100)
     await bulb.update()
 
