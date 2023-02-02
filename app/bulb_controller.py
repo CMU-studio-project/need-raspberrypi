@@ -23,8 +23,8 @@ class LightBulb:
         await self.bulb.turn_off()
         await self.bulb.update()
 
-    async def set_brightness(self, brightness: int):
-        await self.bulb.set_brightness(brightness)
+    async def set_intensity(self, intensity: int):
+        await self.bulb.set_brightness(intensity)
         await self.bulb.update()
     
     async def set_hsv(self, hue: int, saturation: int, value: int):

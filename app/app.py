@@ -49,25 +49,26 @@ class NeedApp:
     def wait_command(self) -> None:
         subscribe_message_sync(self.project_id, self.subscription_id, self.sub_callback)
 
-    async def bulb_handler(self, command: str, kwargs) -> None:
-        if command == "turn_on":
+    async def bulb_handler(self, command) -> None:
+        if command["power"] != "None":
+            if command["power"] == "turn_on":
+                await self.bulb.turn_on()
+            else:
+                await self.bulb.turn_off()
+        if command["intensity"] != "None":
             await self.bulb.turn_on()
-        elif command == "turn_off":
-            await self.bulb.turn_off()
-        elif command == "set_brightness":
+            await self.bulb.set_intensity(command["intensity"])
+        elif command["color"] != "None":
             await self.bulb.turn_on()
-            await self.bulb.set_brightness(kwargs["brightness"])
-        elif command == "set_hsv":
-            await self.bulb.turn_on()
-            await self.bulb.set_hsv(kwargs["color"][0], int(kwargs["color"][1]), int(kwargs["color"][2]))
+            await self.bulb.set_hsv(command["color"][0], int(command["color"][1]), int(command["color"][2]))
         else:
-            print("Unknown command")
-
+            await self.bulb.turn_off()
+            
     def sub_callback(self, message: bytes, **kwargs) -> None:
         command = json.loads(message.decode("utf-8"))
         print(command)
         print(kwargs)
-        asyncio.run(self.bulb_handler("turn_off", command))
+        asyncio.run(self.bulb_handler(command))
        
     
 if __name__ == "__main__":
