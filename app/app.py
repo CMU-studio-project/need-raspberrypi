@@ -50,19 +50,17 @@ class NeedApp:
         subscribe_message_sync(self.project_id, self.subscription_id, self.sub_callback)
 
     async def bulb_handler(self, command) -> None:
-        if command["power"] != "None":
-            if command["power"] == "turn_on":
-                await self.bulb.turn_on()
-            else:
-                await self.bulb.turn_off()
         if command["intensity"] != "None":
             await self.bulb.turn_on()
             await self.bulb.set_intensity(command["intensity"])
         elif command["color"] != "None":
             await self.bulb.turn_on()
             await self.bulb.set_hsv(command["color"][0], int(command["color"][1]), int(command["color"][2]))
-        else:
-            await self.bulb.turn_off()
+        if command["power"] != "None":
+            if command["power"] == "on":
+                await self.bulb.turn_on()
+            else:
+                await self.bulb.turn_off()   
             
     def sub_callback(self, message: bytes, **kwargs) -> None:
         command = json.loads(message.decode("utf-8"))
