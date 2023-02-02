@@ -2,6 +2,8 @@ from typing import Union, Optional
 from pathlib import Path
 import time
 import json
+import asyncio
+from bulb_controller import LightBulb
 # from flask import Flask
 
 from needpubsub.publish import publish_message
@@ -17,6 +19,7 @@ class NeedApp:
     3. 인터넷 문제로 2도 실패하면 실패 음성 송출
     """
     def __init__(self, project_id: str, device_id: str, topic_id: str):
+        self.bulb = LightBulb()
         self.project_id = project_id
         self.device_id = device_id
         self.topic_id = topic_id
@@ -45,15 +48,30 @@ class NeedApp:
         
     def wait_command(self) -> None:
         subscribe_message_sync(self.project_id, self.subscription_id, self.sub_callback)
-        
+
+    async def bulb_handler(self, command: str, kwargs) -> None:
+        if command == "turn_on":
+            await self.bulb.turn_on()
+        elif command == "turn_off":
+            await self.bulb.turn_off()
+        elif command == "set_brightness":
+            await self.bulb.turn_on()
+            await self.bulb.set_brightness(kwargs["brightness"])
+        elif command == "set_hsv":
+            await self.bulb.turn_on()
+            await self.bulb.set_hsv(kwargs["color"][0], int(kwargs["color"][1]), int(kwargs["color"][2]))
+        else:
+            print("Unknown command")
+
     def sub_callback(self, message: bytes, **kwargs) -> None:
         command = json.loads(message.decode("utf-8"))
         print(command)
         print(kwargs)
+        asyncio.run(self.bulb_handler("turn_off", command))
+       
     
 if __name__ == "__main__":
     import argparse
-    app.config['SESSION_TYPE'] = 'filesystem'
 
     parser = argparse.ArgumentParser()
     parser.add_argument("--device_id", type=str, help="Device ID")
@@ -64,9 +82,4 @@ if __name__ == "__main__":
     
     app = NeedApp(args.project_id, args.device_id, args.topic_id)
     app.run(args.debug_audio)
-    # @app.route('/')
-    # def hello():
-    #     return 'Coddlers'
-
-    # app.run(host='0.0.0.0', debug=True)
-    
+   
