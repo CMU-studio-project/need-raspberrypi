@@ -16,8 +16,7 @@ porcupine = pvporcupine.create(
   keyword_paths=['./hey-dobby_en_raspberry-pi_v2_1_0.ppn']
 )
 
-"""Represents a "frame" of audio data.
-Requires the number of bytes, the timestamp of the frame, and the duration on init"""
+
 class Frame(object):
    def __init__(self, bytes, timestamp, duration):
        self.bytes = bytes
@@ -38,7 +37,6 @@ def rms( data ):
         n = sample * (1.0/32768)
         sum_squares += n*n
     return math.sqrt( sum_squares / count )
-
 
 def print_sound(indata, outdata, frames, time, status):
     volume_norm = np.linalg.norm(indata)*10
@@ -64,7 +62,7 @@ def print_sound(indata, outdata, frames, time, status):
     volume_norm = np.linalg.norm(indata)*10
     #print ("|" * int(volume_norm))
     print(int(volume_norm))
-
+    
 pa = pyaudio.PyAudio()
 
 new_frame_number = int(porcupine.frame_length * 441 / 160)
@@ -83,6 +81,7 @@ while True:
     #print(pcm)
     #print(len(pcm))
     pcm = resample(pcm, 44100)
+
     #pcm = sd.Stream.read(pcm,44100)
 
 
@@ -96,6 +95,7 @@ while True:
         print('hey dobby detected!')
         print("initial volume:",initial_volume)
         print("initial voice prob:",initial_voice_prob)
+
         # the file name output you want to record into
         filename = "recorded.wav"
         # set the chunk size of 1024 samples
@@ -111,6 +111,7 @@ while True:
         silence = []
 
         record_seconds = 50
+
         auto_stop_condition = 15
 
         breaker = True
@@ -118,6 +119,7 @@ while True:
         print("Recording...")
         while breaker and i in range(int(sample_rate / chunk * record_seconds)):
             data = audio_stream.read(chunk , exception_on_overflow = False)
+
             print(cobra.process(pcm))
             if rms(data)<0.1:
                 print(silence)
