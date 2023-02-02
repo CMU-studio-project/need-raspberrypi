@@ -4,12 +4,10 @@ import time
 import json
 import asyncio
 from bulb_controller import LightBulb
-# from flask import Flask
 
 from needpubsub.publish import publish_message
 from needpubsub.subscribe import subscribe_message_sync
 
-# app = Flask(__name__)
 
 class NeedApp:
     """
@@ -50,37 +48,21 @@ class NeedApp:
         subscribe_message_sync(self.project_id, self.subscription_id, self.sub_callback)
 
     async def bulb_handler(self, command) -> None:
-        if command["power"] != "None":
-            if command["power"] == "turn_on":
-                await self.bulb.turn_on()
-            else:
-                await self.bulb.turn_off()
         if command["intensity"] != "None":
             await self.bulb.turn_on()
             await self.bulb.set_intensity(command["intensity"])
         elif command["color"] != "None":
             await self.bulb.turn_on()
             await self.bulb.set_hsv(command["color"][0], int(command["color"][1]), int(command["color"][2]))
-        else:
-            await self.bulb.turn_off()
+        if command["power"] != "None":
+            if command["power"] == "on":
+                await self.bulb.turn_on()
+            else:
+                await self.bulb.turn_off()   
             
     def sub_callback(self, message: bytes, **kwargs) -> None:
         command = json.loads(message.decode("utf-8"))
         print(command)
         print(kwargs)
         asyncio.run(self.bulb_handler(command))
-       
     
-if __name__ == "__main__":
-    import argparse
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--device_id", type=str, help="Device ID")
-    parser.add_argument("--project_id", type=str, help="project ID")
-    parser.add_argument("--topic_id", type=str, help="topic ID")
-    parser.add_argument("--debug_audio", type=str, help="Audio file for debugging")
-    args = parser.parse_args()
-    
-    app = NeedApp(args.project_id, args.device_id, args.topic_id)
-    app.run(args.debug_audio)
-   
