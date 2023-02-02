@@ -1,0 +1,26 @@
+version: '3'
+services:
+  app:
+    restart: 'always'
+    build:
+        context: ./app
+        dockerfile: Dockerfile
+    command: python app.py --device_id pi7 --project_id iitp-class-team-4 --topic_id pi-speech --debug_audio audio/lumos_maxima_sj.m4a
+    environment: 
+        - PORT=5000
+    ports:
+      - 5000:5000
+    expose:
+      - 5000
+    env_file:
+      - ./app/.env
+    volumes:
+      - ./app/:/app/
+  redis:
+    image: redis:latest
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data/redis
+volumes:
+  redis_data:

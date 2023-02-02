@@ -30,9 +30,11 @@ var/
 DeepSpeech-examples/
 DeepSpeechInstall/
 .gitconfig
+credentials/
 
 # ENV files
 .env
+.venv/
 
 # Wegiht
 *.deb
