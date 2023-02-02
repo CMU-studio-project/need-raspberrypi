@@ -4,12 +4,10 @@ import time
 import json
 import asyncio
 from bulb_controller import LightBulb
-# from flask import Flask
 
 from needpubsub.publish import publish_message
 from needpubsub.subscribe import subscribe_message_sync
 
-# app = Flask(__name__)
 
 class NeedApp:
     """
@@ -67,18 +65,4 @@ class NeedApp:
         print(command)
         print(kwargs)
         asyncio.run(self.bulb_handler(command))
-       
     
-if __name__ == "__main__":
-    import argparse
-
-    parser = argparse.ArgumentParser()
-    parser.add_argument("--device_id", type=str, help="Device ID")
-    parser.add_argument("--project_id", type=str, help="project ID")
-    parser.add_argument("--topic_id", type=str, help="topic ID")
-    parser.add_argument("--debug_audio", type=str, help="Audio file for debugging")
-    args = parser.parse_args()
-    
-    app = NeedApp(args.project_id, args.device_id, args.topic_id)
-    app.run(args.debug_audio)
-   
