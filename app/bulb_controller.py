@@ -15,7 +15,6 @@ class LightBulb:
     def __init__(self):
         self.bulb = SmartBulb(BULB_IP)
         
-
     async def turn_on(self):
         await self.bulb.turn_on()
         await self.bulb.update()
