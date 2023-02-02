@@ -17,6 +17,7 @@ class AudioController:
         self.PROJECT_ID = os.getenv("PROJECT_ID")
         self.DEVICE_ID = os.getenv("DEVICE_ID")
         self.TOPIC_ID = os.getenv("TOPIC_ID")
+        self.GOOGLE_APPLICATION_CREDENTIAL = os.getenv("GOOGLE_APPLICATION_CREDENTIAL")
         self.cobra = pvcobra.create(access_key='R/RPKdlOkQv8mSmUef6ccnRV27swlnk/WG0YDg4z56P1ZVToo7HugA==')
 
         self.porcupine = pvporcupine.create(
@@ -29,7 +30,7 @@ class AudioController:
     the sample rate.
     Yields/Generates: Frames of the requested duration.
     """
-    def rms( data ):
+    def rms( self, data ):
         count = len(data)/2
         format = "%dh"%(count)
         shorts = struct.unpack( format, data )
@@ -144,6 +145,7 @@ if __name__ == '__main__':
             # close the file
             wf.close()
 
+            os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = audio_controller.GOOGLE_APPLICATION_CREDENTIAL
             app = NeedApp(audio_controller.PROJECT_ID, audio_controller.DEVICE_ID, audio_controller.TOPIC_ID)
             app.run(filename)
         else:
