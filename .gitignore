@@ -46,6 +46,7 @@ DeepSpeechInstall/
 *.wav
 *.mp3
 *.raw
+*.m4a
 
 # Cache
 __pycache__/
@@ -60,6 +61,7 @@ __pycache__/
 .python_history
 .bash_history
 .ssh/
+.pv/
 
 # dataset
 Libri-test/
