@@ -105,8 +105,8 @@ if __name__ == '__main__':
             frames = []
             silence = []
 
-            record_seconds = 50
-            auto_stop_condition = 4
+            record_seconds = 15
+            auto_stop_condition = 3
 
             breaker = True
             i = 0
