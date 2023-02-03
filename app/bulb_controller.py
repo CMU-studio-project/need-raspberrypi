@@ -29,3 +29,6 @@ class LightBulb:
     async def set_hsv(self, hue: int, saturation: int, value: int):
         await self.bulb.set_hsv(hue, saturation, value)
         await self.bulb.update()
+
+    async def get_light_state(self) -> int:
+        return self.bulb.brightness
