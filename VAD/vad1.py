@@ -6,8 +6,7 @@ import wave
 import math
 import pvcobra
 import sounddevice as sd
-#import wavio as wv
-#from scipy.io.wavfile import write
+from statistics import median
 
 cobra = pvcobra.create(access_key='R/RPKdlOkQv8mSmUef6ccnRV27swlnk/WG0YDg4z56P1ZVToo7HugA==')
 
@@ -28,20 +27,6 @@ Input: the desired frame duration in milliseconds, the PCM data, and
 the sample rate.
 Yields/Generates: Frames of the requested duration.
 """
-def rms( data ):
-    count = len(data)/2
-    format = "%dh"%(count)
-    shorts = struct.unpack( format, data )
-    sum_squares = 0.0
-    for sample in shorts:
-        n = sample * (1.0/32768)
-        sum_squares += n*n
-    return math.sqrt( sum_squares / count )
-
-def print_sound(indata, outdata, frames, time, status):
-    volume_norm = np.linalg.norm(indata)*10
-    print ("|" * int(volume_norm))
-
 def resample(data, input_rate=44100):
     """
     Microphone may not support our native processing sampling rate, so
@@ -57,11 +42,6 @@ def resample(data, input_rate=44100):
     resampled_len = int(len(data) * desired_rate / input_rate)
     res = [data[int(i * input_rate / desired_rate)] for i in range(resampled_len)]
     return  res + [res[-1]]
-
-def print_sound(indata, outdata, frames, time, status):
-    volume_norm = np.linalg.norm(indata)*10
-    #print ("|" * int(volume_norm))
-    print(int(volume_norm))
     
 pa = pyaudio.PyAudio()
 
@@ -73,28 +53,47 @@ audio_stream=pa.open(
     channels=1,
     format=pyaudio.paInt16,
     input=True,
+    #stream_callback=callback,
     frames_per_buffer= new_frame_number)
 
-while True:
+
+volume_queue=[]
+voice_prob_queue=[]
+
+while audio_stream.is_active():
     pcm = audio_stream.read(new_frame_number, exception_on_overflow = False)
+    
+    numpydata = np.frombuffer(pcm, dtype=np.int16)
+
     pcm = struct.unpack_from("h" * new_frame_number, pcm)
-    #print(pcm)
-    #print(len(pcm))
+
     pcm = resample(pcm, 44100)
 
-    #pcm = sd.Stream.read(pcm,44100)
+    volume_queue.insert(0, np.linalg.norm(numpydata))
+    voice_prob_queue.insert(0, cobra.process(pcm))
+    if len(volume_queue) > 20:
+        volume_queue.pop()
+        voice_prob_queue.pop()
+    
+    #print(int(np.linalg.norm(numpydata)/10000)*"|")
 
-
-  
     keyword_index = porcupine.process(pcm)
     
     if keyword_index == 0:
-        initial_volume=rms(audio_stream.read(44100 , exception_on_overflow = False))
-        initial_voice_prob = cobra.process(pcm)
+        
         # detected 'hey dobby'
         print('hey dobby detected!')
-        print("initial volume:",initial_volume)
-        print("initial voice prob:",initial_voice_prob)
+
+        #print(volume_queue)
+        #print(voice_prob_queue)
+
+        #핫워드가 포착되는 순간은 오히려 "hey dobby"가 끝나는 시점이기 때문에 발음을 시작하던 순간을 기준으로 잡음
+        initial_voice_prob  = sorted(voice_prob_queue)[-5]
+        #initial_volume      = sorted(volume_queue)[-10]
+        initial_volume      = volume_queue[voice_prob_queue.index(sorted(voice_prob_queue)[-5]) + 1]
+
+        print("initial voice prob:", initial_voice_prob)
+        print("initial volume:", initial_volume)
 
         # the file name output you want to record into
         filename = "recorded.wav"
@@ -112,30 +111,30 @@ while True:
 
         record_seconds = 50
 
-        auto_stop_condition = 15
+        auto_stop_condition = 5
 
         breaker = True
         i = 0
         print("Recording...")
         while breaker and i in range(int(sample_rate / chunk * record_seconds)):
+            
             data = audio_stream.read(chunk , exception_on_overflow = False)
-
-            print(cobra.process(pcm))
-            if rms(data)<0.1:
-                print(silence)
-                #print("volume:",rms(data))
+            
+            if np.linalg.norm(np.frombuffer(audio_stream.read(new_frame_number, exception_on_overflow = False), dtype=np.int16)) < initial_volume and cobra.process(pcm) < initial_voice_prob:
+                print("||||" * (len(silence) + 1))
                 print("voice prob:",cobra.process(pcm))
+                print("volume:",np.linalg.norm(np.frombuffer(audio_stream.read(new_frame_number, exception_on_overflow = False), dtype=np.int16)))
                 silence.append(1)
             else:
                 silence=[]
-                print(silence)
+                #print(silence)
             #print(silence)
             if len(silence)==auto_stop_condition:
                 breaker = False
             # if you want to hear your voice while recording
             # stream.write(data)
             frames.append(data)
-            i+=1
+            i += 1
         # frames = pcm
         print("Finished recording.")
 
@@ -151,8 +150,4 @@ while True:
         # close the file
         wf.close()
     else:
-        #print(rms(audio_stream.read(44100 , exception_on_overflow = False)))
-        #print(audio_stream.read(44100 , exception_on_overflow = False))
-        print('nay')
-        #with sd.Stream(callback=print_sound):
-        #    sd.sleep(10000)
+        pass
