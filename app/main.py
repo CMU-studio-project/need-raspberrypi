@@ -78,14 +78,26 @@ if __name__ == '__main__':
 
     while True:
         pcm = audio_stream.read(new_frame_number, exception_on_overflow = False)
+        numpydata = np.frombuffer(pcm, dtype=np.int16)
         pcm = struct.unpack_from("h" * new_frame_number, pcm)
         pcm = audio_controller.resample(pcm, 44100)
+
+        volume_queue.insert(0, np.linalg.norm(numpydata))
+        voice_prob_queue.insert(0, cobra.process(pcm))
+        if len(volume_queue) > 20:
+            volume_queue.pop()
+            voice_prob_queue.pop()
+        
+        #print(int(np.linalg.norm(numpydata)/10000)*"|")
 
         keyword_index = audio_controller.porcupine.process(pcm)
         
         if keyword_index == 0:
-            initial_volume=audio_controller.rms(audio_stream.read(44100 , exception_on_overflow = False))
-            initial_voice_prob = audio_controller.cobra.process(pcm)
+
+            #핫워드가 포착되는 순간은 오히려 "hey dobby"가 끝나는 시점이기 때문에 발음을 시작하던 순간을 기준으로 잡음
+            initial_voice_prob  = sorted(voice_prob_queue)[-5]
+            #initial_volume      = sorted(volume_queue)[-10]
+            initial_volume      = volume_queue[voice_prob_queue.index(sorted(voice_prob_queue)[-5]) + 1]
             # detected 'hey dobby'
             print('hey dobby detected!')
             print("initial volume:",initial_volume)
@@ -115,10 +127,10 @@ if __name__ == '__main__':
                 data = audio_stream.read(chunk , exception_on_overflow = False)
 
                 print(audio_controller.cobra.process(pcm))
-                if audio_controller.rms(data)<0.1:
-                    print(silence)
-                    #print("volume:",rms(data))
-                    print("voice prob:",audio_controller.cobra.process(pcm))
+                if np.linalg.norm(np.frombuffer(audio_stream.read(new_frame_number, exception_on_overflow = False), dtype=np.int16)) < initial_volume and cobra.process(pcm) < initial_voice_prob:
+                    print("||||" * (len(silence) + 1))
+                    print("voice prob:",cobra.process(pcm))
+                    print("volume:",np.linalg.norm(np.frombuffer(audio_stream.read(new_frame_number, exception_on_overflow = False), dtype=np.int16)))
                     silence.append(1)
                 else:
                     silence=[]
