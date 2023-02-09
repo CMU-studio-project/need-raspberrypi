@@ -26,7 +26,7 @@ class AudioController:
 
         self.porcupine2 = pvporcupine.create(
         access_key='xMMjYslGKCWniL+vZz61i/XTVGTB5vrrsxi11C7q7g/dhBTJxkd84g==',
-        keyword_paths=['./ko_raspberry-pi_v2_1_1.ppn'],
+        keyword_paths=['./audio/ko_raspberry-pi_v2_1_1.ppn'],
         model_path="./audio/porcupine_params_ko.pv")
         
 
