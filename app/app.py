@@ -70,5 +70,7 @@ class NeedApp:
         command = json.loads(message.decode("utf-8"))
         print(command)
         print(kwargs)
+        if command["house"] == "None":
+            asyncio.run(self.bulb_handler(command))
         asyncio.run(self.bulb_handler(command))
     

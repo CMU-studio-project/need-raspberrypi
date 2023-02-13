@@ -112,7 +112,7 @@ while True:
 
         record_seconds = 50
 
-        auto_stop_condition = 15
+        auto_stop_condition = 3
 
         breaker = True
         i = 0
