@@ -18,12 +18,12 @@ class AudioController:
         self.DEVICE_ID = os.getenv("DEVICE_ID")
         self.TOPIC_ID = os.getenv("TOPIC_ID")
         self.GOOGLE_APPLICATION_CREDENTIAL = os.getenv("GOOGLE_APPLICATION_CREDENTIAL")
-        self.cobra = pvcobra.create(access_key='R/RPKdlOkQv8mSmUef6ccnRV27swlnk/WG0YDg4z56P1ZVToo7HugA==')
+        self.cobra = pvcobra.create(access_key='8XLY9yPzPiXsrssnPjoqISYi0KckMS47iCAfb1ATPke/vF5bD79ZWg==')
 
         self.porcupine = pvporcupine.create(
-        access_key='R/RPKdlOkQv8mSmUef6ccnRV27swlnk/WG0YDg4z56P1ZVToo7HugA==',
-        keyword_paths=['./audio/hey-dobby_en_raspberry-pi_v2_1_0.ppn'])
-        
+        access_key='8XLY9yPzPiXsrssnPjoqISYi0KckMS47iCAfb1ATPke/vF5bD79ZWg==',
+        keyword_paths=['./audio/hey-dobby_en_raspberry-pi_v2_1_0.ppn']
+        )
 
     """Generates audio frames from PCM audio data.
     Input: the desired frame duration in milliseconds, the PCM data, and
@@ -62,7 +62,7 @@ if __name__ == '__main__':
         format=pyaudio.paInt16,
         input=True,
         frames_per_buffer= new_frame_number)
-
+    
     volume_queue=[]
     voice_prob_queue=[]
 
@@ -82,17 +82,13 @@ if __name__ == '__main__':
         if len(volume_queue) > 20:
             volume_queue.pop()
             voice_prob_queue.pop()
-        
-
-        #print(int(np.linalg.norm(numpydata)/10000)*"|")
 
         keyword_index = audio_controller.porcupine.process(pcm)
         
         if keyword_index == 0:
-
-            
+            print("volume_queue:",volume_queue)
+            print("voice_prob_queue:",voice_prob_queue)
             initial_voice_prob  = sorted(voice_prob_queue)[-5]
-            #initial_volume      = sorted(volume_queue)[-10]
             initial_volume      = volume_queue[voice_prob_queue.index(sorted(voice_prob_queue)[-5]) + 1]
             # detected 'hey dobby'
             print('hey dobby detected!')
@@ -126,15 +122,19 @@ if __name__ == '__main__':
             while breaker and i in range(int(sample_rate / chunk * record_seconds)):
                 data = audio_stream.read(int(10000 / record_speed) , exception_on_overflow = False)
 
-                print(audio_controller.cobra.process(pcm))
-                if np.linalg.norm(np.frombuffer(audio_stream.read(new_frame_number, exception_on_overflow = False), dtype=np.int16)) < initial_volume and audio_controller.cobra.process(pcm) < initial_voice_prob:
+                current_voice_prob = audio_controller.cobra.process(pcm)
+                current_volume = np.linalg.norm(np.frombuffer(audio_stream.read(new_frame_number, exception_on_overflow = False), dtype=np.int16))
+                
+                if current_voice_prob < initial_voice_prob and current_volume < initial_volume:
                     print("||||" * (len(silence) + 1))
-                    print("voice prob:",audio_controller.cobra.process(pcm))
-                    print("volume:",np.linalg.norm(np.frombuffer(audio_stream.read(new_frame_number, exception_on_overflow = False), dtype=np.int16)))
+                    print("voice prob:",current_voice_prob)
+                    print("volume:",current_volume)
                     silence.append(1)
                 else:
                     silence=[]
-                    print(silence)
+                    print("")
+                    print("voice prob:",current_voice_prob)
+                    print("volume:",current_volume)
                 #print(silence)
                 if len(silence)==auto_stop_condition:
                     breaker = False
