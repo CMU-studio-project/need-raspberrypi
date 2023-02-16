@@ -4,6 +4,7 @@ import time
 import json
 import asyncio
 from bulb_controller import LightBulb
+import os
 
 from needpubsub.publish import publish_message
 from needpubsub.subscribe import subscribe_message_sync
@@ -54,8 +55,10 @@ class NeedApp:
             new_bright = int(command["intensity"])+int(bright)
             if new_bright > 100:
                 new_bright = 100
+                os.system("mpg321 '/home/pi7/Error_message/error5_bulb_max.wav'")
             elif new_bright < 0:
                 new_bright = 0
+                os.system("mpg321 '/home/pi7/Error_message/error5_bulb_min.wav'")
             await self.bulb.set_intensity(new_bright)
         elif command["color"] != None:
             await self.bulb.turn_on()
@@ -64,8 +67,8 @@ class NeedApp:
             if command["power"] == "on":
                 await self.bulb.turn_on()
             else:
-                await self.bulb.turn_off()   
-            
+                await self.bulb.turn_off()
+
     def sub_callback(self, message: bytes, **kwargs) -> None:
         command = json.loads(message.decode("utf-8"))
         print(command)
