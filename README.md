@@ -14,7 +14,8 @@ For more information, see [Google Service Account Documentation](https://cloud.g
 export GOOGLE_APPLICATION_CREDENTIALS=/path/to/service/account/key.json
 ```
 
-#### Run app
+#### Run app 
 ```shell
+cd app/
 python main.py
 ```
