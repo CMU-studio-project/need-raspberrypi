@@ -18,6 +18,14 @@ export GOOGLE_APPLICATION_CREDENTIALS=/path/to/service/account/key.json
 ```
 or you can write it on `.env` file
 
+#### TTS audio file for excuting
+For audio output you need to download this zip file from the [Google Drive](https://drive.google.com/file/d/1YW-RFySVmOX5IkcM9oUt_1zPh_-8tCO7/view?usp=share_link).
+
+```shell
+cd app/
+unzip tts-audio.zip
+```
+
 
 #### Run app 
 ```shell
