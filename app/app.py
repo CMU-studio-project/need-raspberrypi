@@ -5,11 +5,10 @@ import json
 import asyncio
 from bulb_controller import LightBulb
 import os
+import wave
 
 from needpubsub.publish import publish_message
 from needpubsub.subscribe import subscribe_message_sync
-
-import time
 
 class NeedApp:
     """
@@ -27,8 +26,25 @@ class NeedApp:
         self.session_id = str(time.time_ns())
 
     def run(self, debug_audio: Optional[str] = None, house: str = None) -> None:
-        if debug_audio:
-            self.send_audio("./audio/recorded.wav", None)
+        
+        if house is not None:
+            with open("./audio/{}.txt".format(house), "r") as f:
+                contents = f.read()
+                self.session_id = contents.split(" ")[0]
+                print(self.session_id)
+            self.send_audio(debug_audio, house)
+            print(debug_audio)
+            print(house)
+            filename = debug_audio
+            # Change the file name
+            old_filename = filename
+            new_filename = "./audio/nothing.wav"
+            os.rename(old_filename, new_filename)
+            # os.remove("./audio/{}.wav".format(house))
+            os.remove("./audio/{}.txt".format(house))
+            self.wait_command()
+        else:
+            self.send_audio(debug_audio, None)
             self.wait_command()
 
     def send_audio(self, audio: Union[bytes, Path, str], house: str) -> None:
@@ -37,7 +53,7 @@ class NeedApp:
                 audio_bytes = f.read()
         else:
             audio_bytes = audio
-
+        
         house_kwargs = {"house": house} if house is not None else {}
         publish_message(
             audio_bytes,
@@ -97,9 +113,16 @@ class NeedApp:
         }
         answer_audio = answer2audio[answer]
         # self.record(False, "audio/recorded.wav")
-        self.send_audio(answer_audio, house=house)
-        time.sleep(3)
-        self.wait_command()
+        
+        filename = "./audio/nothing.wav"
+        if os.path.exists(filename):
+            # Change the file name
+            old_filename = filename
+            new_filename = "./audio/{}.wav".format(house)
+            os.rename(old_filename, new_filename)
+        filename = './audio/{}.txt'.format(house)
+        with open(filename, "w") as f:
+            f.write(self.session_id)
 
     def sub_callback(self, message: bytes, **kwargs) -> None:
         command = json.loads(message.decode("utf-8"))
