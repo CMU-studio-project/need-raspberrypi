@@ -31,7 +31,7 @@ if not message[2][-6:] == 'Google':
 from bulb_controller import LightBulb
 bulb = LightBulb()
 if bulb.BULB_IP is None:
-    os.system("mpg321 '/home/pi7/Error_message/error4_bulb.wav'")
+    os.system("mpg321 './tts-audio/error1_internet.mp3'")
 
 
 #%%
