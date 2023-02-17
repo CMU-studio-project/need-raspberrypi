@@ -10,7 +10,7 @@ def connect(host='http://google.com'):
         return False
 
 if not connect():
-    os.system("mpg321 '/home/pi7/Error_message/error1_internet.wav'")
+    os.system("mpg321 './tts-audio/error1_internet.mp3'")
 
 
 #%%
@@ -19,7 +19,7 @@ message = os.system("curl metadata.google.internal -i")
 # print(message)
 # print(type(message))
 if not message[2][-6:] == 'Google':
-    os.system("mpg321 '/home/pi7/Error_message/error2_GCP.wav'")
+    os.system("mpg321 './tts-audio/error2_GCP.mp3''")
 
 #%%
 # Error3. Command is not understood # sentiment 분석을 대신 하기 때문에 사실 에러 케이스에 해당하지 않음.
