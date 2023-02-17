@@ -24,9 +24,9 @@ class LightBulb:
         await self.bulb.turn_on()
         await self.bulb.update()
         bright = self.bulb.brightness
-        if int(bright) == 100:
+        if int(bright) == 100 and intensity>0:
             os.system("mpg321 './tts-audio/error5_bulb_max.mp3'")
-        elif int(bright) == 0:
+        elif int(bright) == 0 and intensity<0:
             os.system("mpg321 './tts-audio/error6_bulb_min.mp3'")
         else: 
             new_bright = intensity + int(bright)
@@ -34,8 +34,8 @@ class LightBulb:
                 new_bright = 100
             elif new_bright < 0:
                 new_bright = 0
-        await self.bulb.set_brightness(new_bright)
-        await self.bulb.update()
+            await self.bulb.set_brightness(new_bright)
+            await self.bulb.update()
     
     async def set_hsv(self, hue: int, saturation: int, value: int):
         await self.bulb.turn_on()
