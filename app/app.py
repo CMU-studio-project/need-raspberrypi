@@ -8,7 +8,7 @@ import os
 
 from needpubsub.publish import publish_message
 from needpubsub.subscribe import subscribe_message_sync
-
+from audio_controller import AudioController
 
 class NeedApp:
     """
@@ -23,57 +23,76 @@ class NeedApp:
         self.device_id = device_id
         self.topic_id = topic_id
         self.subscription_id = f"command-{self.device_id}-sub"
+        self.session_id = str(time.time_ns())
+        self.audio_controller = AudioController()
 
     def run(self, debug_audio: Optional[str] = None) -> None:
-        if debug_audio is not None:
-            self.send_audio(debug_audio)
-            self.wait_command()
+        while True:
+            debug_audio = self.audio_controller.hotword_record() 
+            if debug_audio:
+                self.send_audio("./audio/recorded.wav", None)
+                self.wait_command()
 
-    def send_audio(self, audio: Union[bytes, Path, str]):
+    def send_audio(self, audio: Union[bytes, Path, str], house: str) -> None:
         if isinstance(audio, (Path, str)):
             with open(audio, "rb") as f:
                 audio_bytes = f.read()
         else:
             audio_bytes = audio
-        
-        session_id = str(time.time_ns())
+
+        house_kwargs = {"house": house} if house is not None else {}
         publish_message(
             audio_bytes,
             self.project_id,
             self.topic_id,
             device_id=self.device_id,
-            session_id=session_id,
+            session_id=self.session_id,
+            audio_ext="wav",
+            **house_kwargs,
         )
         
     def wait_command(self) -> None:
         subscribe_message_sync(self.project_id, self.subscription_id, self.sub_callback)
 
     async def bulb_handler(self, command) -> None:
+        if command["power"] != None:
+            if command["power"] == "on":
+                await self.bulb.turn_on()
+            else:
+                await self.bulb.turn_off()
         if command["intensity"] != None:
-            await self.bulb.turn_on()
-            bright = await self.bulb.get_light_state()
-            new_bright = int(command["intensity"])+int(bright)
-            if new_bright > 100:
-                new_bright = 100
-                os.system("mpg321 '/home/pi7/Error_message/error5_bulb_max.wav'")
-            elif new_bright < 0:
-                new_bright = 0
-                os.system("mpg321 '/home/pi7/Error_message/error5_bulb_min.wav'")
-            await self.bulb.set_intensity(new_bright)
+            await self.bulb.set_intensity(int(command["intensity"]))
         elif command["color"] != None:
-            await self.bulb.turn_on()
             await self.bulb.set_hsv(command["color"][0], int(command["color"][1]), int(command["color"][2]))
         if command["power"] != None:
             if command["power"] == "on":
                 await self.bulb.turn_on()
             else:
                 await self.bulb.turn_off()
+    
+    def handle_house(self, command) -> None:
+        house = command["house"]
+        # if house == "gryffindor":
+        #     os.system("mpg321 './tts-audio/SortingHat_start.mp3'")
+        # else:
+        #     os.system("mpg321 './tts-audio/SortingHat_mid.mp3'")
+        # os.system("mpg321 './tts-audio/Q_{}.mp3'".format(house))
+
+        # TODO: mic listener로 대체
+        mic = AudioController()
+        mic.record_and_save("audio/recorded.wav")
+        answer_audio = "audio/recorded.wav"
+        self.send_audio(answer_audio, house=house)
+        self.wait_command()
 
     def sub_callback(self, message: bytes, **kwargs) -> None:
         command = json.loads(message.decode("utf-8"))
         print(command)
         print(kwargs)
-        if command["house"] == "None":
+        self.session_id = kwargs.get("session_id", str(time.time_ns()))
+        print(self.session_id)
+        if command["house"] == None:
             asyncio.run(self.bulb_handler(command))
-        asyncio.run(self.bulb_handler(command))
+        else:
+            asyncio.run(self.handle_house(command))
     
