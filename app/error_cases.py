@@ -16,9 +16,7 @@ if not connect():
 #%%
 # Error2. GCP is not working
 message = os.system("curl metadata.google.internal -i")
-# print(message)
-# print(type(message))
-if not message[2][-6:] == 'Google':
+if not message != 1536:
     os.system("mpg321 './tts-audio/error2_GCP.mp3''")
 
 #%%
@@ -39,7 +37,7 @@ if bulb.BULB_IP is None:
 # os.system("mpg321 '/home/pi7/Error_message/error5_bulb_max.wav'")
 
 #%%
-# Error 5-2. Bulb is already fully dark
+# Error 5-2. Bulb is already fully dark # app.py 에서 직접 구현함.
 # os.system("mpg321 '/home/pi7/Error_message/error5_bulb_min.wav'")
 
 
