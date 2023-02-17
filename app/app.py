@@ -28,7 +28,7 @@ class NeedApp:
 
     def run(self, debug_audio: Optional[str] = None) -> None:
         while True:
-            debug_audio = self.audio_controller.hotword_record() 
+            debug_audio = self.audio_controller.record(True ,"audio/recorded.wav") 
             if debug_audio:
                 self.send_audio("./audio/recorded.wav", None)
                 self.wait_command()
@@ -80,9 +80,8 @@ class NeedApp:
 
         # TODO: mic listener로 대체
         mic = AudioController()
-        mic.record_and_save("audio/recorded.wav")
-        answer_audio = "audio/recorded.wav"
-        self.send_audio(answer_audio, house=house)
+        mic.record(False, "audio/recorded.wav")
+        self.send_audio("audio/recorded.wav", house=house)
         self.wait_command()
 
     def sub_callback(self, message: bytes, **kwargs) -> None:
