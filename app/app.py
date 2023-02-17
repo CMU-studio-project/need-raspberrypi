@@ -27,8 +27,9 @@ class NeedApp:
         self.audio_controller = AudioController()
 
     def run(self, debug_audio: Optional[str] = None) -> None:
+        audio_controller = AudioController()
         while True:
-            debug_audio = self.audio_controller.record(True ,"audio/recorded.wav") 
+            debug_audio = audio_controller.record(True ,"audio/recorded.wav") 
             if debug_audio:
                 self.send_audio("./audio/recorded.wav", None)
                 self.wait_command()

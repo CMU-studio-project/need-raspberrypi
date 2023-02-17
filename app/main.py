@@ -3,6 +3,9 @@ from dotenv import load_dotenv
 import os
 from app import NeedApp
 
+# # Internet, GCP, bulb connection status check
+# os.system("python error_cases.py")
+
 load_dotenv()
 PROJECT_ID = os.getenv("PROJECT_ID")
 TOPIC_ID = os.getenv("TOPIC_ID")

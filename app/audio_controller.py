@@ -57,19 +57,19 @@ class AudioController:
 
         volume_queue=[]
         voice_prob_queue=[]
-        # # 마이크를 작동시키는 부분인데, 마이크 연결을 try 로 진행하고, 마이크 연결이 안되어있을 때는 except 구문에서 (마이크 연결이 안되어있다는) 에러 음성을 송출.
-        # try:
-        #     audio_stream=pa.open(
-        #         # rate=porcupine.sample_rate,
-        #         rate = 44100,
-        #         channels=1,
-        #         format=pyaudio.paInt16,
-        #         input=True,
-        #         frames_per_buffer= new_frame_number)
-        # except:
-        #     bulb = LightBulb()
-        #     asyncio.run(bulb.blink_when_error())
-        #     os.system("mpg321 './tts-audio/error7_mic.mp3'")
+        # 마이크를 작동시키는 부분인데, 마이크 연결을 try 로 진행하고, 마이크 연결이 안되어있을 때는 except 구문에서 (마이크 연결이 안되어있다는) 에러 음성을 송출.
+        try:
+            audio_stream=pa.open(
+                # rate=porcupine.sample_rate,
+                rate = 44100,
+                channels=1,
+                format=pyaudio.paInt16,
+                input=True,
+                frames_per_buffer= new_frame_number)
+        except:
+            bulb = LightBulb()
+            asyncio.run(bulb.blink_when_error())
+            os.system("mpg321 './tts-audio/error7_mic.mp3'")
 
         pcm = audio_stream.read(new_frame_number, exception_on_overflow = False)
         numpydata = np.frombuffer(pcm, dtype=np.int16)
@@ -159,3 +159,6 @@ class AudioController:
         else:
             pass
 
+if __name__ == "__main__":
+    recorder = AudioController()
+    recorder.record(True, "audio/recorded.wav")
