@@ -8,7 +8,8 @@ import os
 
 from needpubsub.publish import publish_message
 from needpubsub.subscribe import subscribe_message_sync
-from audio_controller import AudioController
+
+import time
 
 class NeedApp:
     """
@@ -24,15 +25,11 @@ class NeedApp:
         self.topic_id = topic_id
         self.subscription_id = f"command-{self.device_id}-sub"
         self.session_id = str(time.time_ns())
-        self.audio_controller = AudioController()
 
-    def run(self, debug_audio: Optional[str] = None) -> None:
-        audio_controller = AudioController()
-        while True:
-            debug_audio = audio_controller.record(True ,"audio/recorded.wav") 
-            if debug_audio:
-                self.send_audio("./audio/recorded.wav", None)
-                self.wait_command()
+    def run(self, debug_audio: Optional[str] = None, house: str = None) -> None:
+        if debug_audio:
+            self.send_audio("./audio/recorded.wav", None)
+            self.wait_command()
 
     def send_audio(self, audio: Union[bytes, Path, str], house: str) -> None:
         if isinstance(audio, (Path, str)):
@@ -70,19 +67,38 @@ class NeedApp:
                 await self.bulb.turn_on()
             else:
                 await self.bulb.turn_off()
+        else:
+            if command["house"] == "gryffindor":
+                await self.bulb.set_hsv(0, 81, int(command["speaker"]*100))
+            elif command["house"] == "hufflepuff":
+                await self.bulb.set_hsv(60, 75, int(command["speaker"]*100))
+            elif command["house"] == "ravenclaw":
+                await self.bulb.set_hsv(210, 75, int(command["speaker"]*100))
+            elif command["house"] == "slytherin":
+                await self.bulb.set_hsv(120, 75, int(command["speaker"]*100))
     
     def handle_house(self, command) -> None:
         house = command["house"]
-        # if house == "gryffindor":
-        #     os.system("mpg321 './tts-audio/SortingHat_start.mp3'")
-        # else:
-        #     os.system("mpg321 './tts-audio/SortingHat_mid.mp3'")
-        # os.system("mpg321 './tts-audio/Q_{}.mp3'".format(house))
-
+        if house == "gryffindor":
+            os.system("mpg321 './tts-audio/SortingHat_start.mp3'")
+        else:
+            os.system("mpg321 './tts-audio/SortingHat_mid.mp3'")
+        os.system("mpg321 './tts-audio/Q_{}.mp3'".format(house))
+        
         # TODO: mic listener로 대체
-        mic = AudioController()
-        mic.record(False, "audio/recorded.wav")
-        self.send_audio("audio/recorded.wav", house=house)
+        answer = "positive"
+
+        answer2audio = {
+            "positive": "./audio/hate.wav",
+            "negative": "tests/commands/negative_sentiment.wav",
+            "finite": "tests/commands/finite.wav",
+            "repeat": "tests/commands/repeat.wav",
+            "stop": "tests/commands/stop_sorting.wav"
+        }
+        answer_audio = answer2audio[answer]
+        # self.record(False, "audio/recorded.wav")
+        self.send_audio(answer_audio, house=house)
+        time.sleep(3)
         self.wait_command()
 
     def sub_callback(self, message: bytes, **kwargs) -> None:
@@ -90,9 +106,13 @@ class NeedApp:
         print(command)
         print(kwargs)
         self.session_id = kwargs.get("session_id", str(time.time_ns()))
-        print(self.session_id)
-        if command["house"] == None:
+        if command["speaker"] == "test":
+            self.handle_house(command)
+        elif command["house"] == None:
             asyncio.run(self.bulb_handler(command))
-        else:
-            asyncio.run(self.handle_house(command))
+        elif command["speaker"] != None:
+            print("Speaker: {}".format(command["speaker"]))
+            os.system("mpg321 './tts-audio/SortingHat_last.mp3'")
+            os.system("mpg321 './tts-audio/A_{}.mp3'".format(command["house"]))
+            asyncio.run(self.bulb_handler(command))
     
